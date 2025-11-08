@@ -31,11 +31,11 @@ function move(board, player, position) {
     for (let i = 0; i < 9; i++) {
         if (i != position && board[i][0] == player) {
             remember(board, patch, i)
-            const age = board[i][1]
-            if (age <= 0) {
+            const ttl = board[i][1]
+            if (ttl <= 0) {
                 board[i] = ['']
             } else {
-                board[i][1] = age - 1
+                board[i][1] = ttl - 1
             }
         }
     }
@@ -56,7 +56,7 @@ function checkWinner(board) {
     return null
 }
 
-const maxDepth = 5
+const maxDepth = 6
 function minimax(board, depth, isMaximizing) {
     const positions = getValidPositions(board)
 
@@ -91,15 +91,35 @@ function minimax(board, depth, isMaximizing) {
     return [bestMoves, bestScore]
 }
 
+function encodeState(board, player) {
+    const needRevert = (player == 'O')
+    let n = 0
+    board.forEach(c => {
+        let digit
+        if (c[0] == '') {
+            digit = 0
+        } else if (c[0] == 'X') {
+            digit = needRevert ? c[1] + 4 : c[1] + 1
+        } else if (c[0] == 'O') {
+            digit = needRevert ? c[1] + 1 : c[1] + 4
+        }
+        n = n * 7 + digit
+    })
+    return n * 2
+}
+
 let gameBoard
-let gameActive
+let allowMove
 let currentPlayer
+let currentWinActions
 const cells = document.querySelectorAll('.cell')
 const gameStatus = document.getElementById('game-status')
+const winHintButton = document.getElementById('win-hint')
 resetGame()
 document.getElementById('board').addEventListener('click', handleCellClick)
 document.getElementById('reset').addEventListener('click', resetGame)
-document.getElementById('self-step').addEventListener('click', aiMove)
+document.getElementById('ai-hint').addEventListener('click', aiHint)
+winHintButton.addEventListener('click', winHint)
 
 function resetGame() {
     gameBoard = [
@@ -107,7 +127,7 @@ function resetGame() {
         [''], [''], [''],
         [''], [''], [''],
     ]
-    gameActive = true
+    allowMove = true
     currentPlayer = 'X'
 
     cells.forEach(cell => {
@@ -129,22 +149,27 @@ function moveAndUpdate(position) {
 function handleCellClick(e) {
     const cellIndex = parseInt(e.target.getAttribute('data-index'))
 
-    if (gameBoard[cellIndex][0] !== '' || !gameActive)
+    if (!allowMove || gameBoard[cellIndex][0] !== '')
         return
 
-    const result = moveAndUpdate(cellIndex)
-    if (result == null) {
-        aiMove()
-    }
+    moveAndUpdate(cellIndex)
 }
 
-function aiMove() {
-    if (!gameActive) return
+function aiHint() {
+    if (!allowMove) return
 
     const [bestMoves, _] = minimax(gameBoard, 0, true)
-    const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+    hintCells(bestMoves)
+    // const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+    // return moveAndUpdate(bestMove)
+}
 
-    return moveAndUpdate(bestMove)
+function winHint() {
+    if (!allowMove) return
+
+    hintCells(currentWinActions)
+    // const move = currentWinActions[Math.floor(Math.random() * currentWinActions.length)]
+    // return moveAndUpdate(move)
 }
 
 function highlightWinningCells(pattern) {
@@ -155,9 +180,21 @@ function highlightWinningCells(pattern) {
     })
 }
 
-function updateStatus(result) {
-    if (result) gameActive = false
+function hintCells(pattern) {
+    if (!pattern) return
 
+    pattern.forEach(index => {
+        cells[index].classList.add('hint-cell')
+    })
+
+    setTimeout((() => {
+        pattern.forEach(index => {
+            cells[index].classList.remove('hint-cell')
+        })
+    }), 550)
+}
+
+function updateStatus(result) {
     cells.forEach((cell, i) => {
         const player = gameBoard[i][0]
         if (gameBoard[i].length > 1) {
@@ -168,7 +205,16 @@ function updateStatus(result) {
         // cell.textContent = gameBoard[i][0]
     })
 
+    const currStateCode = encodeState(gameBoard, currentPlayer)
+    currentWinActions = winActions[currStateCode]
+    if (currentWinActions === undefined) {
+        winHintButton.disabled = true
+    } else {
+        winHintButton.disabled = false
+    }
+
     if (result) {
+        allowMove = false
         const { winner,  pattern } = result
         gameStatus.textContent = `${winner} wins!`
         highlightWinningCells(pattern)

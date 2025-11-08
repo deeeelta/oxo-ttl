@@ -1,6 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -9,7 +10,15 @@ body {
 }
 
 .game-container {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.game-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .board {
@@ -37,6 +46,11 @@ body {
 
 .winning-cell {
     background-color: #a8e6a8;
+    transition: background-color 0.3s ease; 
+}
+
+.hint-cell {
+    background-color: #c0c0c0;
     transition: background-color 0.3s ease; 
 }
 
