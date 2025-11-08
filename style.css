@@ -40,13 +40,13 @@ body {
     transition: background-color 0.3s ease; 
 }
 
-#status {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-}
-
-#reset {
+.game-button {
     font-size: 1em;
     padding: 10px 20px;
     cursor: pointer;
+}
+
+#game-status {
+    font-size: 1.2em;
+    margin-bottom: 10px;
 }
