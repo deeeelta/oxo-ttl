@@ -1,3 +1,5 @@
+Each X or O will disappear after 3 moves. [Play this variant here](https://deeeelta.github.io/tic-tac-toe-ai-with-ttl/).
+
 # Tic Tac Toe vs AI
 
 This project is a web-based implementation of the classic Tic Tac Toe game, where a human player competes against an AI opponent. The AI uses the minimax algorithm to make optimal moves, providing a challenging gameplay experience.
