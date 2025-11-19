@@ -56,8 +56,7 @@ function checkWinner(board) {
     return null
 }
 
-const maxDepth = 6
-function minimax(board, depth, isMaximizing) {
+function minimax(maxDepth, board, depth, isMaximizing) {
     const positions = getValidPositions(board)
 
     if (depth >= maxDepth) return [positions, 0]
@@ -77,7 +76,7 @@ function minimax(board, depth, isMaximizing) {
 
     positions.forEach(i => {
         const patch = move(board, nextPlayer, i)
-        const [_, score] = minimax(board, depth + 1, !isMaximizing)
+        const [_, score] = minimax(maxDepth, board, depth + 1, !isMaximizing)
         revert(board, patch)
         if (score == bestScore) {
             bestMoves.push(i)
@@ -112,14 +111,27 @@ let gameBoard
 let allowMove
 let currentPlayer
 let currentWinActions
+let historyPatches = []
 const cells = document.querySelectorAll('.cell')
 const gameStatus = document.getElementById('game-status')
 const winHintButton = document.getElementById('win-hint')
+const winMoveButton = document.getElementById('win-move')
+const depthSlider = document.getElementById('minimax-depth')
+const depthValueLabel = document.getElementById('depth-value')
 resetGame()
-document.getElementById('board').addEventListener('click', handleCellClick)
+updateDepthLabel()
 document.getElementById('reset').addEventListener('click', resetGame)
-document.getElementById('ai-hint').addEventListener('click', aiHint)
+document.getElementById('undo').addEventListener('click', undoGame)
+depthSlider.addEventListener('input', updateDepthLabel)
+document.getElementById('board').addEventListener('click', handleCellClick)
+document.getElementById('minimax-hint').addEventListener('click', minimaxHint)
+document.getElementById('minimax-move').addEventListener('click', minimaxMove)
 winHintButton.addEventListener('click', winHint)
+winMoveButton.addEventListener('clink', winMove)
+
+function updateDepthLabel() {
+    depthValueLabel.textContent = depthSlider.value;
+}
 
 function resetGame() {
     gameBoard = [
@@ -129,6 +141,7 @@ function resetGame() {
     ]
     allowMove = true
     currentPlayer = 'X'
+    historyPatches = []
 
     cells.forEach(cell => {
         cell.textContent = ''
@@ -138,8 +151,25 @@ function resetGame() {
     updateStatus(null)
 }
 
+function undoGame() {
+    if (historyPatches.length > 0) {
+        const patch = historyPatches.pop()
+        revert(gameBoard, patch)
+        currentPlayer = currentPlayer == 'O' ? 'X' : 'O'
+        if (!allowMove) {
+            allowMove = true
+            cells.forEach(cell => {
+                cell.textContent = ''
+                cell.classList.remove('winning-cell')
+            })
+        }
+        updateStatus(null)
+    }
+}
+
 function moveAndUpdate(position) {
-    move(gameBoard, currentPlayer, position)
+    const patch = move(gameBoard, currentPlayer, position)
+    historyPatches.push(patch)
     currentPlayer = currentPlayer == 'O' ? 'X' : 'O'
     const result = checkWinner(gameBoard)
     updateStatus(result)
@@ -155,21 +185,34 @@ function handleCellClick(e) {
     moveAndUpdate(cellIndex)
 }
 
-function aiHint() {
+function minimaxHint() {
     if (!allowMove) return
 
-    const [bestMoves, _] = minimax(gameBoard, 0, true)
+    const maxDepth = Number(depthSlider.value)
+    const [bestMoves, _] = minimax(maxDepth, gameBoard, 0, true)
     hintCells(bestMoves)
-    // const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
-    // return moveAndUpdate(bestMove)
+}
+
+function minimaxMove() {
+    if (!allowMove) return
+
+    const maxDepth = Number(depthSlider.value)
+    const [bestMoves, _] = minimax(maxDepth, gameBoard, 0, true)
+    const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+    return moveAndUpdate(bestMove)
 }
 
 function winHint() {
     if (!allowMove) return
 
     hintCells(currentWinActions)
-    // const move = currentWinActions[Math.floor(Math.random() * currentWinActions.length)]
-    // return moveAndUpdate(move)
+}
+
+function winMove() {
+    if (!allowMove) return
+
+    const move = currentWinActions[Math.floor(Math.random() * currentWinActions.length)]
+    return moveAndUpdate(move)
 }
 
 function highlightWinningCells(pattern) {

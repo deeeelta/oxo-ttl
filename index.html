@@ -7,26 +7,64 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <h1>Tic Tac Toe with TTL</h1>
-        <div id="game-status">game-status</div>
-        <div class="board" id="board">
-            <div class="cell" data-index="0"></div>
-            <div class="cell" data-index="1"></div>
-            <div class="cell" data-index="2"></div>
-            <div class="cell" data-index="3"></div>
-            <div class="cell" data-index="4"></div>
-            <div class="cell" data-index="5"></div>
-            <div class="cell" data-index="6"></div>
-            <div class="cell" data-index="7"></div>
-            <div class="cell" data-index="8"></div>
-        </div>
-        <div class="game-buttons">
-            <button class="game-button" id="reset">Reset Game</button>
-            <button class="game-button" id="ai-hint">Minimax Choices</button>
-            <button class="game-button" id="win-hint">Winning Choices</button>
-        </div>
+    <div class="page">
+        <header class="header">
+            <h1 class="title">Tic Tac Toe with TTL</h1>
+            <div id="game-status" class="status">Player X's turn</div>
+        </header>
+
+        <main class="game-container">
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+            </div>
+
+            <section class="controls">
+                <div class="top-buttons">
+                    <button class="game-button primary" id="reset">Reset</button>
+                    <button class="game-button primary" id="undo">Undo</button>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">Minimax Depth</span>
+                        <span class="slider-value" id="depth-value">3</span>
+                    </div>
+                    <input
+                        type="range"
+                        id="minimax-depth"
+                        min="3"
+                        max="8"
+                        value="6"
+                    />
+                    <div class="slider-scale">
+                        <span>3</span>
+                        <span>8</span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <span class="group-label">Hints</span>
+                    <button class="game-button" id="minimax-hint">Minimax</button>
+                    <button class="game-button" id="win-hint">Winning</button>
+                </div>
+
+                <div class="button-group">
+                    <span class="group-label">Auto Moves</span>
+                    <button class="game-button" id="minimax-move">Minimax</button>
+                    <button class="game-button" id="win-move">Winning</button>
+                </div>
+            </section>
+        </main>
     </div>
+
     <script src="winActions.js"></script>
     <script src="logic.js"></script>
 </body>
