@@ -1,4 +1,4 @@
-import { move, revert, checkWinner } from "./minimax.js"
+import { randomElement, move, revert, checkWinner } from "./minimax.js"
 
 function encodeState(board, player) {
     const needRevert = (player == 'O')
@@ -79,13 +79,17 @@ function undoGame() {
 }
 
 function searchingBegin() {
-    searchIndicator.style.display = 'inline-flex'
     document.body.classList.add('searching')
+    setTimeout(() => {
+        if (document.body.classList.contains('searching'))
+            searchIndicator.style.display = 'inline-flex'
+    }, 60)
 }
 
-function searchingEnd() {
-    searchIndicator.style.display = 'none'
+function searchingEnd(nMove) {
     document.body.classList.remove('searching')
+    searchIndicator.style.display = 'none'
+    console.log(nMove, "moves explored")
 }
 
 function moveAndUpdate(position) {
@@ -107,9 +111,9 @@ function handleCellClick(e) {
 
 const minimaxWorker = new Worker('./minimaxWorker.js', { type: 'module' })
 minimaxWorker.onmessage = (e) => {
-    searchingEnd()
+    const { type, scores, nMove } = e.data
 
-    const { type, scores } = e.data
+    searchingEnd(nMove)
     let bestScore = -Infinity
     let bestMoves = []
     scores.forEach((score, i) => {
@@ -124,7 +128,7 @@ minimaxWorker.onmessage = (e) => {
     if (type == 'HINT') {
         hintCells(bestMoves, 550)
     } else if (type == 'MOVE') {
-        const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+        const bestMove = randomElement(bestMoves)
         moveAndUpdate(bestMove)
     }
 }
@@ -164,7 +168,7 @@ function winHint() {
 function winMove() {
     if (!allowMove) return
 
-    const move = currentWinActions[Math.floor(Math.random() * currentWinActions.length)]
+    const move = randomElement(currentWinActions)
     moveAndUpdate(move)
 }
 

@@ -1,3 +1,7 @@
+export function randomElement(arr) {
+    return arr[Math.floor(Math.random() * arr.length)]
+}
+
 export const winPatterns = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
     [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
@@ -57,6 +61,8 @@ export function checkWinner(board) {
 }
 
 export function minimax(currentPlayer, maxDepth, board) {
+    let nMove = 0
+
     function minimaxRec(depth, alpha, beta, isMaximizing) {
         const positions = getValidPositions(board)
 
@@ -76,6 +82,7 @@ export function minimax(currentPlayer, maxDepth, board) {
             let bestScore = -Infinity
             for (const i of positions) {
                 const patch = move(board, nextPlayer, i)
+                nMove += 1
                 const score = minimaxRec(depth + 1, alpha, beta, !isMaximizing)
                 revert(board, patch)
                 bestScore = Math.max(bestScore, score)
@@ -88,6 +95,7 @@ export function minimax(currentPlayer, maxDepth, board) {
             let bestScore = Infinity
             for (const i of positions) {
                 const patch = move(board, nextPlayer, i)
+                nMove += 1
                 const score = minimaxRec(depth + 1, alpha, beta, !isMaximizing)
                 revert(board, patch)
                 bestScore = Math.min(bestScore, score)
@@ -102,10 +110,11 @@ export function minimax(currentPlayer, maxDepth, board) {
     let scores = new Array(board.length).fill(-Infinity)
     for (const i of positions) {
         const patch = move(board, currentPlayer, i)
+        nMove += 1
         const score = minimaxRec(1, -Infinity, Infinity, false)
         revert(board, patch)
         scores[i] = score
     }
 
-    return scores
+    return { scores, nMove }
 }
