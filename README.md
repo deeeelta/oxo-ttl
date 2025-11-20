@@ -1,4 +1,4 @@
-Each X or O will disappear after 3 moves. [Play this variant here](https://deeeelta.github.io/tic-tac-toe-ai-with-ttl/).
+Each X or O will disappear after 3 moves. [Play this variant here](https://deeeelta.github.io/oxo-ttl/).
 
 # Tic Tac Toe vs AI
 
