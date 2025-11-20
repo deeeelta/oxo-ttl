@@ -341,6 +341,58 @@ body {
     }
 }
 
+/* Tooltip base */
+.tooltip {
+    position: relative;
+}
+
+/* Tooltip bubble */
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: #111827;
+    color: #f9fafb;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease-out, transform 120ms ease-out;
+    transform-origin: bottom center;
+    z-index: 20;
+}
+
+/* Small arrow */
+.tooltip::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #111827 transparent transparent transparent;
+    opacity: 0;
+    transition: opacity 120ms ease-out;
+    z-index: 19;
+}
+
+/* Show instantly on hover */
+.tooltip:hover::after,
+.tooltip:hover::before {
+    opacity: 1;
+}
+
+/* Optional: slight lift on show */
+.tooltip:hover::after {
+    transform: translateX(-50%) translateY(-2px);
+}
+
 .status-wrapper {
     display: inline-flex;
     align-items: center;

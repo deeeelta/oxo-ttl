@@ -194,9 +194,13 @@ function updateStatus(result) {
     if (currentWinActions === undefined) {
         winHintButton.disabled = true
         winMoveButton.disabled = true
+        winHintButton.setAttribute('data-tooltip', 'No winning strategy exists :(')
+        winMoveButton.setAttribute('data-tooltip', 'No winning strategy exists :(')
     } else {
         winHintButton.disabled = false
         winMoveButton.disabled = false
+        winHintButton.setAttribute('data-tooltip', 'A winning strategy exists for you! :)')
+        winMoveButton.setAttribute('data-tooltip', 'A winning strategy exists for you! :)')
     }
 
     if (result) {

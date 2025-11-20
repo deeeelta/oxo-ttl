@@ -57,14 +57,38 @@
 
                 <div class="button-group">
                     <span class="group-label">Hints</span>
-                    <button class="game-button" id="minimax-hint">Minimax</button>
-                    <button class="game-button" id="win-hint">Winning</button>
+                    <button
+                        class="game-button tooltip"
+                        id="minimax-hint"
+                        data-tooltip="Show best moves searched by minimax"
+                    >
+                        Minimax
+                    </button>
+                    <button
+                        class="game-button tooltip"
+                        id="win-hint"
+                        data-tooltip="A winning strategy exists for you!"
+                    >
+                        Winning
+                    </button>
                 </div>
 
                 <div class="button-group">
                     <span class="group-label">Auto Moves</span>
-                    <button class="game-button" id="minimax-move">Minimax</button>
-                    <button class="game-button" id="win-move">Winning</button>
+                    <button
+                        class="game-button tooltip"
+                        id="minimax-move"
+                        data-tooltip="Let minimax play a move"
+                    >
+                        Minimax
+                    </button>
+                    <button
+                        class="game-button tooltip"
+                        id="win-move"
+                        data-tooltip="A winning strategy exists for you!"
+                    >
+                        Winning
+                    </button>
                 </div>
             </section>
         </main>
