@@ -108,7 +108,19 @@ function handleCellClick(e) {
 const minimaxWorker = new Worker('./minimaxWorker.js', { type: 'module' })
 minimaxWorker.onmessage = (e) => {
     searchingEnd()
-    const { type, bestMoves } = e.data
+
+    const { type, scores } = e.data
+    let bestScore = -Infinity
+    let bestMoves = []
+    scores.forEach((score, i) => {
+        if (score > bestScore) {
+            bestScore = score
+            bestMoves = [i]
+        } else if (score == bestScore) {
+            bestMoves.push(i)
+        }
+    })
+
     if (type == 'HINT') {
         hintCells(bestMoves, 550)
     } else if (type == 'MOVE') {

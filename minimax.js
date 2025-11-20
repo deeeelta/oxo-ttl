@@ -56,36 +56,56 @@ export function checkWinner(board) {
     return null
 }
 
-export function minimax(currentPlayer, maxDepth, board, depth, isMaximizing) {
-    const positions = getValidPositions(board)
+export function minimax(currentPlayer, maxDepth, board) {
+    function minimaxRec(depth, alpha, beta, isMaximizing) {
+        const positions = getValidPositions(board)
 
-    if (depth >= maxDepth) return [positions, 0]
+        if (depth >= maxDepth) return 0
 
-    const result = checkWinner(board)
-    if (result) {
-        if (result.winner == currentPlayer) {
-            return [positions, maxDepth - depth]
+        const result = checkWinner(board)
+        if (result) {
+            if (result.winner == currentPlayer) {
+                return maxDepth - depth
+            } else {
+                return depth - maxDepth
+            }
+        }
+
+        if (isMaximizing) {
+            const nextPlayer = currentPlayer
+            let bestScore = -Infinity
+            for (const i of positions) {
+                const patch = move(board, nextPlayer, i)
+                const score = minimaxRec(depth + 1, alpha, beta, !isMaximizing)
+                revert(board, patch)
+                bestScore = Math.max(bestScore, score)
+                if (bestScore >= beta) break
+                alpha = Math.max(alpha, score)
+            }
+            return bestScore
         } else {
-            return [positions, depth - maxDepth]
+            const nextPlayer = currentPlayer == 'O' ? 'X' : 'O'
+            let bestScore = Infinity
+            for (const i of positions) {
+                const patch = move(board, nextPlayer, i)
+                const score = minimaxRec(depth + 1, alpha, beta, !isMaximizing)
+                revert(board, patch)
+                bestScore = Math.min(bestScore, score)
+                if (bestScore <= alpha) break
+                beta = Math.min(beta, score)
+            }
+            return bestScore
         }
     }
 
-    const nextPlayer = isMaximizing ? currentPlayer : (currentPlayer == 'O' ? 'X' : 'O')
-    let bestScore = isMaximizing ? -Infinity : Infinity
-    let bestMoves = []
-
-    positions.forEach(i => {
-        const patch = move(board, nextPlayer, i)
-        const [_, score] = minimax(currentPlayer, maxDepth, board, depth + 1, !isMaximizing)
+    const positions = getValidPositions(board)
+    let scores = new Array(board.length).fill(-Infinity)
+    for (const i of positions) {
+        const patch = move(board, currentPlayer, i)
+        const score = minimaxRec(1, -Infinity, Infinity, false)
         revert(board, patch)
-        if (score == bestScore) {
-            bestMoves.push(i)
-        } else if ((isMaximizing && score > bestScore) ||
-            (!isMaximizing && score < bestScore)) {
-            bestScore = score
-            bestMoves = [i]
-        }
-    })
+        scores[i] = score
+    }
 
-    return [bestMoves, bestScore]
+    return scores
 }
