@@ -1,94 +1,4 @@
-const winPatterns = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-    [0, 4, 8], [2, 4, 6] // Diagonals
-]
-
-function getValidPositions(board) {
-    let indices = []
-    for (let i = 0; i < 9; i++) {
-        if (board[i][0] == '') {
-            indices.push(i)
-        }
-    }
-    return indices
-}
-
-function remember(board, patch, position) {
-    patch.push([position, structuredClone(board[position])])
-}
-
-function revert(board, patch) {
-    patch.forEach(p => {
-        board[p[0]] = p[1]
-    })
-}
-
-function move(board, player, position) {
-    patch = []
-    remember(board, patch, position)
-    board[position] = [player, 2]
-    for (let i = 0; i < 9; i++) {
-        if (i != position && board[i][0] == player) {
-            remember(board, patch, i)
-            const ttl = board[i][1]
-            if (ttl <= 0) {
-                board[i] = ['']
-            } else {
-                board[i][1] = ttl - 1
-            }
-        }
-    }
-    return patch
-}
-
-function checkWinner(board) {
-    for (let i = 0; i < winPatterns.length; i++) {
-        const [a, b, c] = winPatterns[i]
-        const player = board[a][0]
-        if (player != '' && player == board[b][0] && player == board[c][0]) {
-            return {
-                winner: player,
-                pattern: winPatterns[i]
-            }
-        }
-    }
-    return null
-}
-
-function minimax(maxDepth, board, depth, isMaximizing) {
-    const positions = getValidPositions(board)
-
-    if (depth >= maxDepth) return [positions, 0]
-
-    const result = checkWinner(board)
-    if (result) {
-        if (result.winner == currentPlayer) {
-            return [positions, maxDepth - depth]
-        } else {
-            return [positions, depth - maxDepth]
-        }
-    }
-
-    const nextPlayer = isMaximizing ? currentPlayer : (currentPlayer == 'O' ? 'X' : 'O')
-    let bestScore = isMaximizing ? -Infinity : Infinity
-    let bestMoves = []
-
-    positions.forEach(i => {
-        const patch = move(board, nextPlayer, i)
-        const [_, score] = minimax(maxDepth, board, depth + 1, !isMaximizing)
-        revert(board, patch)
-        if (score == bestScore) {
-            bestMoves.push(i)
-        } else if ((isMaximizing && score > bestScore) ||
-            (!isMaximizing && score < bestScore)) {
-            bestScore = score
-            bestMoves = [i]
-        }
-    })
-
-    return [bestMoves, bestScore]
-}
+import { move, revert, checkWinner } from "./minimax.js"
 
 function encodeState(board, player) {
     const needRevert = (player == 'O')
@@ -118,6 +28,7 @@ const winHintButton = document.getElementById('win-hint')
 const winMoveButton = document.getElementById('win-move')
 const depthSlider = document.getElementById('minimax-depth')
 const depthValueLabel = document.getElementById('depth-value')
+const searchIndicator = document.getElementById("search-indicator")
 resetGame()
 updateDepthLabel()
 document.getElementById('reset').addEventListener('click', resetGame)
@@ -167,13 +78,22 @@ function undoGame() {
     }
 }
 
+function searchingBegin() {
+    searchIndicator.style.display = 'inline-flex'
+    document.body.classList.add('searching')
+}
+
+function searchingEnd() {
+    searchIndicator.style.display = 'none'
+    document.body.classList.remove('searching')
+}
+
 function moveAndUpdate(position) {
     const patch = move(gameBoard, currentPlayer, position)
     historyPatches.push(patch)
     currentPlayer = currentPlayer == 'O' ? 'X' : 'O'
     const result = checkWinner(gameBoard)
     updateStatus(result)
-    return result
 }
 
 function handleCellClick(e) {
@@ -185,34 +105,55 @@ function handleCellClick(e) {
     moveAndUpdate(cellIndex)
 }
 
+const minimaxWorker = new Worker('./minimaxWorker.js', { type: 'module' })
+minimaxWorker.onmessage = (e) => {
+    searchingEnd()
+    const { type, bestMoves } = e.data
+    if (type == 'HINT') {
+        hintCells(bestMoves, 550)
+    } else if (type == 'MOVE') {
+        const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+        moveAndUpdate(bestMove)
+    }
+}
+
 function minimaxHint() {
     if (!allowMove) return
 
+    searchingBegin()
     const maxDepth = Number(depthSlider.value)
-    const [bestMoves, _] = minimax(maxDepth, gameBoard, 0, true)
-    hintCells(bestMoves)
+    minimaxWorker.postMessage({
+        type: 'HINT',
+        currentPlayer,
+        maxDepth,
+        gameBoard
+    })
 }
 
 function minimaxMove() {
     if (!allowMove) return
 
+    searchingBegin()
     const maxDepth = Number(depthSlider.value)
-    const [bestMoves, _] = minimax(maxDepth, gameBoard, 0, true)
-    const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)]
-    return moveAndUpdate(bestMove)
+    minimaxWorker.postMessage({
+        type: 'MOVE',
+        currentPlayer,
+        maxDepth,
+        gameBoard
+    })
 }
 
 function winHint() {
     if (!allowMove) return
 
-    hintCells(currentWinActions)
+    hintCells(currentWinActions, 550)
 }
 
 function winMove() {
     if (!allowMove) return
 
     const move = currentWinActions[Math.floor(Math.random() * currentWinActions.length)]
-    return moveAndUpdate(move)
+    moveAndUpdate(move)
 }
 
 function highlightWinningCells(pattern) {
@@ -223,18 +164,18 @@ function highlightWinningCells(pattern) {
     })
 }
 
-function hintCells(pattern) {
+function hintCells(pattern, time) {
     if (!pattern) return
 
     pattern.forEach(index => {
         cells[index].classList.add('hint-cell')
     })
 
-    setTimeout((() => {
+    setTimeout(() => {
         pattern.forEach(index => {
             cells[index].classList.remove('hint-cell')
         })
-    }), 550)
+    }, time)
 }
 
 function updateStatus(result) {
@@ -252,8 +193,10 @@ function updateStatus(result) {
     currentWinActions = winActions[currStateCode]
     if (currentWinActions === undefined) {
         winHintButton.disabled = true
+        winMoveButton.disabled = true
     } else {
         winHintButton.disabled = false
+        winMoveButton.disabled = false
     }
 
     if (result) {

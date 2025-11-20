@@ -187,6 +187,16 @@ body {
     box-shadow: none;
 }
 
+.game-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #e5e7eb;
+    background-color: #f9fafb;
+    color: var(--text-muted);
+    box-shadow: none;
+    transform: none;
+}
+
 .game-button.primary {
     align-self: center;
     min-width: 130px;
@@ -199,6 +209,13 @@ body {
 .game-button.primary:hover {
     background: linear-gradient(135deg, #1d4ed8, #2563eb);
     box-shadow: 0 10px 22px rgba(37, 99, 235, 0.45);
+}
+
+.game-button:disabled:hover,
+.game-button:disabled:active {
+    background-color: #f9fafb;
+    box-shadow: none;
+    transform: none;
 }
 
 .slider-group {
@@ -322,4 +339,46 @@ body {
         flex-basis: 100%;
         margin-bottom: 2px;
     }
+}
+
+.status-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-indicator {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: none;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Simple dot spinner */
+.search-indicator::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 2px solid rgba(148, 163, 184, 0.7);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Prevent interaction when searching */
+body.searching {
+    pointer-events: none;
+    cursor: progress;
+}
+
+/* But still allow click inside the spinner text itself if needed */
+body.searching #search-indicator {
+    pointer-events: auto;
 }
