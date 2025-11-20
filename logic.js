@@ -38,7 +38,7 @@ document.getElementById('board').addEventListener('click', handleCellClick)
 document.getElementById('minimax-hint').addEventListener('click', minimaxHint)
 document.getElementById('minimax-move').addEventListener('click', minimaxMove)
 winHintButton.addEventListener('click', winHint)
-winMoveButton.addEventListener('clink', winMove)
+winMoveButton.addEventListener('click', winMove)
 
 function updateDepthLabel() {
     depthValueLabel.textContent = depthSlider.value;
