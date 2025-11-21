@@ -87,7 +87,10 @@ def main():
         init_state1.encode(): [],
         init_state2.encode(): [],
     }
-    rev_transitions = transitions.copy()
+    rev_transitions: dict[int, list[tuple[int, int]]] = {
+        init_state1.encode(): [],
+        init_state2.encode(): [],
+    }
 
     def add_transition(curr, pos, next):
         edges = transitions.get(curr)
